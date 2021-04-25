@@ -159,8 +159,8 @@ def doEverything():
     endpoint = dev[0][(0,0)][0]
     try:
         if dev.is_kernel_driver_active(interface):
-            LOGGER.debug('Detaching kernel driver for interface %d '
-                         'of %r on ports %r', interface, self._device, self._ports)
+            print('Detaching kernel driver for interface %d '
+                         'of %r on ports %r' % (interface, self._device, self._ports))
             dev._device.detach_kernel_driver(interface)
     except NotImplementedError:
         pass
