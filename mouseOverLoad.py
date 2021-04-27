@@ -7,7 +7,8 @@ import usb.util
 import pyautogui
 import math
 
-from ctypes import windll, Structure, c_long, byref
+from ctypes import *
+#windll, Structure, c_long, byref
 
 class point(Structure):
     _fields_ = [("x", c_long), ("y", c_long)]
@@ -29,9 +30,9 @@ class point(Structure):
     def __truediv__(self,value):
         x = self.x / value
         y = self.y / value
-        if x is 0:
+        if x == 0:
             x = 1
-        if y is 0:
+        if y == 0:
             y = 1
         return point(math.ceil(x),math.ceil(y))
     def __floordiv__(self,value):
@@ -154,7 +155,7 @@ def mouseScroll(diff):
                
 def doEverything():
     # decimal vendor and product values
-    dev = usb.core.find(idVendor=1155, idProduct=22352)
+    dev = usb.core.find(idVendor=1659, idProduct=8963)
     interface = 0
     endpoint = dev[0][(0,0)][0]
     try:
@@ -182,28 +183,28 @@ def doEverything():
         try:
             data = dev.read(endpoint.bEndpointAddress,endpoint.wMaxPacketSize)
             #this determines the number of fingers touching the screen... only supports up to 2 fingers for now
-            if data[1] is INITIAL_TOUCH:
-                if data[2] is 0 and (data[10] is 0 or data[10] is 1 or data[10] is 2):
+            if data[1] == INITIAL_TOUCH:
+                if data[2] == 0 and (data[10] == 0 or data[10] == 1 or data[10] == 2):
                     if screen.setState([True,False,False]):
-                        if screen.moved is False:
+                        if screen.moved == False:
                             screen.isLeftClick()
                             screen.isRightClick()
                         screen.lastPosition = point()
                         screen.allowReset = False
                         screen.moved = False
                     continue
-                if data[2] is 0 and data[10] is 3:
-                    if screen.allowReset is True:
+                if data[2] == 0 and data[10] == 3:
+                    if screen.allowReset == True:
                         screen.allowReset = False
                         continue
                     if screen.setState([False,False,True]):
                         screen.allowReset = False
                     continue
-                if data[2] is 1 and data[3] is not 0:
+                if data[2] == 1 and data[3] !=  0:
                     screen.isPressAndHold()
                     screen.setState([False,True,False])
                     continue
-                if data[2] is 2:
+                if data[2] == 2:
                     if screen.checkState([False,False,True]) and screen.allowReset is False:
                         screen.allowReset = True
                         continue
@@ -214,13 +215,13 @@ def doEverything():
                 ##single touch
                 if screen.checkState([False,True,False]):
                     print("one fingers")
-                    if screen.lastPosition.x is -1:
+                    if screen.lastPosition.x == -1:
                         screen.lastPosition = screen.extractTouchPosition(data)
                     else:
                         current = screen.extractTouchPosition(data)
                         diff = current - screen.lastPosition
                         diff = point(getPos(diff.x),getPos(diff.y))
-                        if diff.x is 0 and diff.y is 0:
+                        if diff.x == 0 and diff.y == 0:
                             continue
                         #print(diff)
                         thread = threading.Thread(target = mouseMove, args=(diff,))
@@ -228,13 +229,13 @@ def doEverything():
                         screen.lastPosition = current
                 if screen.checkState([False,True,True]):
                     print("two fingers")
-                    if screen.lastPosition.x is -1:
+                    if screen.lastPosition.x == -1:
                         screen.lastPosition = screen.extractTouchPosition(data)
                     else:
                         current = screen.extractTouchPosition(data)
                         diff = current - screen.lastPosition
                         diff = point(getPos(diff.x),getPos(diff.y))
-                        if diff.x is 0 and diff.y is 0:
+                        if diff.x == 0 and diff.y == 0:
                             continue                        
                         thread = threading.Thread(target = mouseScroll, args=(diff,))
                         thread.start()
@@ -253,4 +254,3 @@ thread2 = threading.Thread(target = doEverything)
 thread2.start()
 #thread1 = threading.Thread(target = idleScreen)
 #thread1.start()
-
